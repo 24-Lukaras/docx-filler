@@ -1,0 +1,25 @@
+.docxTiles {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+}
+
+.docxTiles .docxTile {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: #303030 1px 1px 1px 1px;
+    min-width: 200px;
+}
+
+.docxTiles .docxTile:hover {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: #202020 2px 2px 2px 2px;
+    min-width: 200px;
+}

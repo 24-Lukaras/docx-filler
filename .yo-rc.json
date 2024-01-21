@@ -1,0 +1,21 @@
+{
+  "@microsoft/generator-sharepoint": {
+    "plusBeta": false,
+    "isCreatingSolution": true,
+    "nodeVersion": "16.13.2",
+    "sdksVersions": {
+      "@microsoft/microsoft-graph-client": "3.0.2",
+      "@microsoft/teams-js": "2.12.0"
+    },
+    "version": "1.18.2",
+    "libraryName": "docx-filler",
+    "libraryId": "b8ea1aec-ae24-40f8-8273-0da75e2e4ddb",
+    "environment": "spo",
+    "packageManager": "npm",
+    "solutionName": "docx-filler",
+    "solutionShortDescription": "docx-filler description",
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "componentType": "webpart"
+  }
+}
