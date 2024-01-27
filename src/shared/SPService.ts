@@ -48,4 +48,8 @@ export class SPService {
         const file = await this.sp.web.lists.getById(listId).items.getById(id).file.getBlob();
         return file;
     }
+
+    public async uploadAttachment(listId: string, itemId: number, filename: string, file: Blob) : Promise<void> {
+        await this.sp.web.lists.getById(listId).items.getById(itemId).attachmentFiles.add(filename, file);
+    }
 }

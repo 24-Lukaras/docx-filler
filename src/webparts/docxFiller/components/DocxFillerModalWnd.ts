@@ -4,6 +4,8 @@ import * as jq from "jquery";
 import styles from "./DocxFillerModalWnd.module.scss";
 import { SPService } from "../../../shared/SPService";
 import { DocxTokenFiller } from "../../../shared/DocxTokenFiller";
+import { IDocxFillerWebPartProps } from "../DocxFillerWebPart";
+import { saveAs } from "file-saver";
 
 export class DocxFillerModalWnd implements IHtmlComponent{
 
@@ -14,13 +16,15 @@ export class DocxFillerModalWnd implements IHtmlComponent{
     private opened: boolean;
     private service: SPService;
     private templateId: number;
+    private props: IDocxFillerWebPartProps;
 
-    constructor (guid: Guid, service: SPService, listGuid: string, templateLibrary: string){
+    constructor (guid: Guid, service: SPService, listGuid: string, templateLibrary: string, props: IDocxFillerWebPartProps){
         this.guid = Guid.newGuid();
         this.parentGuid = guid;
         this.service = service;
         this.listGuid = listGuid;
         this.templateLibrary = templateLibrary;
+        this.props = props;
     }
     
     public open(templateId: number) {
@@ -62,11 +66,23 @@ export class DocxFillerModalWnd implements IHtmlComponent{
         lookupFields.forEach((x) => {
             item[x] = lookups[x]["Title"];
         });
-        console.log(item);
         const doc = await this.service.getDocument(this.templateLibrary, this.templateId);
-        const docxFiller = new DocxTokenFiller();
+        const docxFiller = new DocxTokenFiller(this.props);
         await docxFiller.loadDocument(doc);
-        await docxFiller.replace(item, fields, false);
+        await docxFiller.replace(item, fields, this.props.useDisplayFields);
+
+        const result = await docxFiller.export();
+
+        switch (this.props.exportType) {
+
+            case "attachment":
+                await this.service.uploadAttachment(this.listGuid, itemId, this.props.exportFilename, result);
+                break;
+
+            default:
+                saveAs(result, this.props.exportFilename);
+                break;
+        }
     }
 
     render(): string

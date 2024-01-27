@@ -2,7 +2,7 @@ import { Guid, Version } from '@microsoft/sp-core-library';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
 
 import styles from './DocxFillerWebPart.module.scss';
-import { IPropertyPaneConfiguration, IPropertyPaneDropdownOption, PropertyPaneDropdown } from '@microsoft/sp-property-pane';
+import { IPropertyPaneConfiguration, IPropertyPaneDropdownOption, IPropertyPaneField, PropertyPaneCheckbox, PropertyPaneDropdown, PropertyPaneLabel, PropertyPaneTextField } from '@microsoft/sp-property-pane';
 //import { PropertyFieldMultiSelect } from '@pnp/spfx-property-controls';
 import { SPService } from '../../shared/SPService';
 import { IHtmlComponent } from './components/IHtmlComponent';
@@ -21,9 +21,14 @@ export interface IDocxFillerWebPartProps {
   templateLibrary: string,
   targetList: string,
   displayFields: string[],
+  useDisplayFields: boolean,
   tokenStyle: string
 
-  exportType: string
+  exportType: string,
+  exportFormat: string,
+
+  exportFilename: string,
+  exportPath: string,
 }
 
 export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFillerWebPartProps> {
@@ -44,17 +49,16 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
     else {
       let components: IHtmlComponent[] = [];
       
-      const modal = new DocxFillerModalWnd(this.guid, this.service, this.properties.targetList, this.properties.templateLibrary);
+      const modal = new DocxFillerModalWnd(this.guid, this.service, this.properties.targetList, this.properties.templateLibrary, this.properties);
       components.push(modal);      
 
-      const items = await this.service.getAllDocuments(this.properties.templateLibrary, this.properties.displayFields);
+      const items = (await this.service.getAllDocuments(this.properties.templateLibrary, this.properties.displayFields))
+        .filter((x) => x["FileLeafRef"].toLocaleLowerCase().endsWith(".docx")); //docx files filtration
 
       switch (this.properties.displayStyle) {
-
         default:
           components.push(new DocxFillerTiles(items));
           break;
-
       }
       
       this.domElement.innerHTML = `<div class='${styles.docxFiller}' wpId='${this.guid}'>${components.map((x) => {return x.render()}).join("")}</div>`;
@@ -91,6 +95,56 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
   }
   
   protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
+
+
+    let exportFields: IPropertyPaneField<any>[] = [PropertyPaneDropdown("exportType", {
+      label: "Export type",
+      options: [
+        {
+          key: "download",
+          text: "Download"
+        },
+        {
+          key: "attachment",
+          text: "Attachment"
+        },
+        {
+          key: "sp_file",
+          text: "Sharepoint File"
+        },
+      ],
+      selectedKey: this.properties.exportType
+    }),
+    PropertyPaneDropdown("exportFormat", {
+      label: "Export format",
+      options: [
+        {
+          key: ".docx",
+          text: ".docx"
+        },
+      ],
+      selectedKey: this.properties.exportFormat
+    })];
+
+    switch (this.properties.exportType) {
+
+      case "sp_file":
+        exportFields.push(PropertyPaneTextField("exportPath", {
+          label: "Path",
+          value: this.properties.exportPath
+        }));
+        break;
+
+      default:
+      case "attachment":
+        exportFields.push(PropertyPaneTextField("exportFilename", {
+          label: "Filename",
+          value: this.properties.exportFilename
+        }));
+        break;
+    }
+    
+
     return {
       pages: [
         {                    
@@ -131,7 +185,7 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
                       text: "{Token}"
                     },
                     {
-                      key: "[token]",
+                      key: "\\[token\\]",
                       text: "[Token]"
                     },
                     {
@@ -148,23 +202,18 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
                     },
                   ],
                   selectedKey: this.properties.tokenStyle
-                }),                
+                }),
+                PropertyPaneLabel("useDisplayFieldsLabel", {
+                  text: "Use field display names",
+                }),
+                PropertyPaneCheckbox("useDisplayFields", {
+                  checked: this.properties.useDisplayFields,
+                }),      
               ]
             },
             {
               groupName: "Export settings",
-              groupFields: [
-                PropertyPaneDropdown("exportType", {
-                  label: "Export type",
-                  options: [
-                    {
-                      key: "download",
-                      text: "Download"
-                    },
-                  ],
-                  selectedKey: this.properties.exportType
-                }),
-              ]
+              groupFields: exportFields
             },
           ]
         }

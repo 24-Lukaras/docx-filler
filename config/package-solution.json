@@ -3,7 +3,7 @@
   "solution": {
     "name": "docx-filler-client-side-solution",
     "id": "b8ea1aec-ae24-40f8-8273-0da75e2e4ddb",
-    "version": "1.0.0.0",
+    "version": "1.1.0.0",
     "includeClientSideAssets": true,
     "skipFeatureDeployment": true,
     "isDomainIsolated": false,
@@ -30,7 +30,7 @@
         "title": "docx-filler Feature",
         "description": "The feature that activates elements of the docx-filler solution.",
         "id": "cc5f92f9-b9df-4d33-8a32-17a49915bf06",
-        "version": "1.0.0.0"
+        "version": "1.1.0.0"
       }
     ]
   },

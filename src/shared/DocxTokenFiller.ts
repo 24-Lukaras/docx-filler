@@ -1,16 +1,18 @@
 import * as zip from 'jszip';
-import { saveAs } from 'file-saver';
 import { IFieldInfo } from '@pnp/sp/fields';
+import { IDocxFillerWebPartProps } from '../webparts/docxFiller/DocxFillerWebPart';
 
 export class DocxTokenFiller {
     
     private zipFile: zip;
     private sourceDocumentString: string;
+    private props: IDocxFillerWebPartProps;
 
-    constructor () {        
+    constructor (props: IDocxFillerWebPartProps) {     
+        this.props = props;   
     }
 
-    public async loadDocument(document: Blob): Promise<void> {
+    public async loadDocument(document: Blob): Promise<void> {        
         const loader = new zip();
         const zipFile = await loader.loadAsync(document);
         this.zipFile = zipFile;
@@ -42,7 +44,7 @@ export class DocxTokenFiller {
             fields.forEach((field) => {
 
                 const key = useDisplayNames ? field.Title : field.InternalName;
-                const regex = new RegExp(`{${key}}`);
+                const regex = new RegExp(this.props.tokenStyle.replace("token", key));
                 const match = regex.exec(text);
 
                 if (match){
@@ -53,14 +55,15 @@ export class DocxTokenFiller {
                 }
 
             });
+            wRunColl.recalculate();
         }
 
         const wordFolder = this.zipFile.folder("word");
-        wordFolder?.file("document.xml", xmlDocument.documentElement.innerHTML);
+        wordFolder?.file("document.xml", xmlDocument.documentElement.innerHTML);        
+    }
 
-        this.zipFile.generateAsync({type: "blob"}).then((content) => {
-            saveAs(content, "test.docx");
-        });
+    public async export(): Promise<Blob> {
+        return await this.zipFile.generateAsync({type: "blob"});
     }
 
     private getFieldString(item: any, field: IFieldInfo) : string {
@@ -151,7 +154,15 @@ class WRunCollection {
         textNode.textContent = text;
         firstRun.text = text;
 
-        runsToDelete.forEach((x) => {const index = this.nodes.indexOf(x); this.nodes = this.nodes.splice(index, 1);});
+        runsToDelete.forEach((x) => {const index = this.nodes.indexOf(x); x.node.remove(); this.nodes.splice(index, 1);});
+
+        
+        this.nodes = this.nodes.map((x) => { return x; });
+    }
+
+    public recalculate() {
+        let index = 0;
+        this.nodes.forEach((x) => {x.collectionIndex = index; index += x.text.length;});        
     }
 
     public getCollectionText() {
