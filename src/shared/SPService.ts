@@ -49,6 +49,13 @@ export class SPService {
         return file;
     }
 
+    public async uploadFile(filePath: string, file: Blob) : Promise<void> {
+        const pathArr = filePath.split("/");
+        const filename = pathArr.pop() ?? "404";
+        const folderpath = pathArr.join("/");
+        await this.sp.web.getFolderByServerRelativePath(folderpath).files.addUsingPath(filename, file, {Overwrite: true});
+    }
+
     public async uploadAttachment(listId: string, itemId: number, filename: string, file: Blob) : Promise<void> {
         await this.sp.web.lists.getById(listId).items.getById(itemId).attachmentFiles.add(filename, file);
     }

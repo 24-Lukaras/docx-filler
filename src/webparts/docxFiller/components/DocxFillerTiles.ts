@@ -17,8 +17,7 @@ export class DocxFillerTiles implements IHtmlComponent {
 
     private renderTile(item: any): string {
         return `<div templateId='${item["ID"]}' class='${styles.docxTile} ${root.templateClickable}'>
-            ${item["FileLeafRef"]}
-            <hr>            
+            ${item["FileLeafRef"]}                        
         </div>`;
     }
 

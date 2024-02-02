@@ -61,7 +61,10 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
           break;
       }
       
-      this.domElement.innerHTML = `<div class='${styles.docxFiller}' wpId='${this.guid}'>${components.map((x) => {return x.render()}).join("")}</div>`;
+      this.domElement.innerHTML = `<link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css" />
+      <div class='${styles.docxFiller}' wpId='${this.guid}'>
+        ${components.map((x) => {return x.render()}).join("")}
+      </div>`;
       this.registerButtons(modal);
     }
   }
@@ -112,6 +115,10 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
           key: "sp_file",
           text: "Sharepoint File"
         },
+        {
+          key: "*",
+          text: "Any"
+        },
       ],
       selectedKey: this.properties.exportType
     }),
@@ -127,6 +134,17 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
     })];
 
     switch (this.properties.exportType) {
+
+      case "*":
+        exportFields.push(PropertyPaneTextField("exportFilename", {
+          label: "Filename",
+          value: this.properties.exportFilename
+        }));
+        exportFields.push(PropertyPaneTextField("exportPath", {
+          label: "Path",
+          value: this.properties.exportPath
+        }));
+        break;
 
       case "sp_file":
         exportFields.push(PropertyPaneTextField("exportPath", {
