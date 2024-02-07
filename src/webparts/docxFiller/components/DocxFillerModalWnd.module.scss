@@ -50,8 +50,12 @@
 
 .itemsTable {
   width: 100%;
-  height: 300px;
+  max-height: 300px;
   border-collapse: collapse;
+}
+
+.itemsTable tr {
+  height: 30px;
 }
 
 .itemsTableProcessing .docxAction {

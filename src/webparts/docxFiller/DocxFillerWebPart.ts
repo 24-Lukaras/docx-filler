@@ -15,11 +15,13 @@ export interface IDocxFillerWebPartProps {
   libraryFields: IPropertyPaneDropdownOption[],
   documentLibraries: IPropertyPaneDropdownOption[],
   lists: IPropertyPaneDropdownOption[],
+  targetListFields: IPropertyPaneDropdownOption[],
 
   displayStyle: string,
 
   templateLibrary: string,
   targetList: string,
+  filterField: string,
   displayFields: string[],
   useDisplayFields: boolean,
   tokenStyle: string
@@ -41,6 +43,7 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
 
     await this.fillDocumentLibraries();
     await this.fillLists();
+    await this.fillTargetListFields();
 
     const configured = this.properties.displayStyle && this.properties.templateLibrary && this.properties.tokenStyle;
     if (!configured){
@@ -86,6 +89,13 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
       .map((list) => {return {key: list.Id, text: list.Title}})
   }
 
+  private async fillTargetListFields(): Promise<void> {
+    if (this.properties.targetList) {
+      this.properties.targetListFields = (await this.service.getListFields(this.properties.targetList))
+        .filter((f) => { return !f.Hidden; })
+        .map((f) => { return {key: f.InternalName, text: f.Title};});
+    }
+  }
 
   protected onInit(): Promise<void> {
     return super.onInit().then((_) => {
@@ -194,6 +204,11 @@ export default class DocxFillerWebPart extends BaseClientSideWebPart<IDocxFiller
                   label: "Target list",
                   options: this.properties.lists,
                   selectedKey: this.properties.targetList                
+                }),
+                PropertyPaneDropdown("filterField", {
+                  label: "List field",
+                  options: this.properties.targetListFields,
+                  selectedKey: this.properties.filterField                
                 }),
                 PropertyPaneDropdown("tokenStyle", {
                   label: "Token style",

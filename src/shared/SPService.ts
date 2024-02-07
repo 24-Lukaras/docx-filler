@@ -29,6 +29,16 @@ export class SPService {
         return items;
     }
 
+    public async getListItemsContaining(listId: string, field: string, filter: string): Promise<any[]> {
+        if (!filter || filter.length == 0) {
+            return await this.sp.web.lists.getById(listId).items.top(10)();
+        }
+        const items = await this.sp.web.lists.getById(listId).getItemsByCAMLQuery({
+            ViewXml: `<View><Query><Where><Contains><FieldRef Name="${field}" /><Value Type="Text">${filter}</Value></Contains></Where></Query></View>`
+        });
+        return items;
+    }
+
     public async getListItem(listId: string, itemId: number): Promise<any> {
         const item = await this.sp.web.lists.getById(listId).items.getById(itemId)();
         return item;

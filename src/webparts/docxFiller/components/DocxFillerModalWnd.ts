@@ -51,15 +51,15 @@ export class DocxFillerModalWnd implements IHtmlComponent
     public registerClose()
     {
         jq(`div[wpId="${this.parentGuid}"][wndId="${this.guid}"] .${styles.modalClose}`).on("click", () => { this.close() });
-        jq("input#search").on("change", () => this.populateItems());
+        jq(`div[wpId="${this.parentGuid}"][wndId="${this.guid}"] input#search`).on("change", (event) => this.populateItems(event));
     }
 
-    private async populateItems(): Promise<void>
+    private async populateItems(event: JQuery.ChangeEvent): Promise<void>
     {
         const tBody = jq(`div[wpId="${this.parentGuid}"][wndId="${this.guid}"] table tbody`);
         tBody.empty();
         tBody.append("<div>Searching...</div>");
-        this.service.getAllListItems(this.listGuid).then((items) =>
+        this.service.getListItemsContaining(this.listGuid, this.props.filterField, event.target.value).then((items) =>
         {
             const btn = this.getItemButtons();
             const itemsHtml = items.map((item) =>
@@ -214,7 +214,7 @@ export class DocxFillerModalWnd implements IHtmlComponent
                     <div class="${styles.rowCenter}">
                         <label>Search:</label>&nbsp;<input id="search" />
                     </div>
-                    <div class="${styles.row}">
+                    <div class="${styles.row}" style="min-height: 300px">
                         <table class="${styles.itemsTable}">
                             <tbody></tbody>
                         </table>
